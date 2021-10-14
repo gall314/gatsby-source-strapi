@@ -157,5 +157,5 @@ Temporary Items
 .idea
 
 ## Lcal
-lib/
+#lib/
 .eslintcache
