@@ -19,12 +19,15 @@ const getEntityCount = async (reporter, apiBase, jwtToken, api) => {
 }
 
 module.exports = async (entityDefinition, ctx) => {
-  const { apiURL, queryLimit, jwtToken, reporter } = ctx;
+  const { apiURL, queryLimit, totalLimit, jwtToken, reporter } = ctx;
 
   const { endpoint, api } = entityDefinition;
   // Define API endpoint.
   let apiBase = `${apiURL}/${endpoint}`;
-  const count = await getEntityCount(reporter, apiBase, jwtToken, api);
+  const totalCount = await getEntityCount(reporter, apiBase, jwtToken, api);
+  let count = totalLimit ? totalLimit : totalCount;
+
+  reporter.info(`Fetching ${count} out of ${totalCount} items from Strapi - ${apiBase}`);
 
   let entities = [];
   for(let start = 0; start < count; start += api?.qs?.queryLimit || queryLimit) {

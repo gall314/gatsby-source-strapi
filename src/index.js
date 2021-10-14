@@ -55,7 +55,7 @@ const addDynamicZoneFieldsToSchema = ({ type, items, actions, schema }) => {
 
 exports.sourceNodes = async (
   { store, actions, cache, reporter, getNode, getNodes, createNodeId, createContentDigest, schema },
-  { apiURL = 'http://localhost:1337', loginData = {}, queryLimit = 100, ...options }
+  { apiURL = 'http://localhost:1337', loginData = {}, queryLimit = 100, totalLimit = 0, ...options }
 ) => {
   const { createNode, deleteNode, touchNode } = actions;
 
@@ -68,6 +68,7 @@ exports.sourceNodes = async (
     createNode,
     createNodeId,
     queryLimit,
+    totalLimit,
     apiURL,
     jwtToken,
     reporter,
