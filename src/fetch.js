@@ -9,14 +9,18 @@ const getEntityCount = async (reporter, apiBase, jwtToken, api) => {
     params: { ...api?.qs },
     headers: addAuthorizationHeader({}, jwtToken),
   };
-  reporter.info(`Starting to count data from Strapi - ${apiBase} with params ${JSON.stringify(requestOptions.params)}`);
+  reporter.info(
+    `Starting to count data from Strapi - ${apiBase} with params ${JSON.stringify(
+      requestOptions.params
+    )}`
+  );
   try {
     const { data } = await axios(requestOptions);
     return data;
   } catch (error) {
     reporter.panic(`Failed to count data from Strapi`, error);
   }
-}
+};
 
 module.exports = async (entityDefinition, ctx) => {
   const { apiURL, queryLimit, totalLimit, jwtToken, reporter } = ctx;
@@ -25,27 +29,27 @@ module.exports = async (entityDefinition, ctx) => {
   // Define API endpoint.
   let apiBase = `${apiURL}/${endpoint}`;
   const totalCount = await getEntityCount(reporter, apiBase, jwtToken, api);
-  let count = totalLimit ? totalLimit : totalCount;
+  let count = totalLimit && totalLimit < totalCount ? totalLimit : totalCount;
 
   reporter.info(`Fetching ${count} out of ${totalCount} items from Strapi - ${apiBase}`);
 
   let entities = [];
-  for(let start = 0; start < count; start += api?.qs?.queryLimit || queryLimit) {
+  for (let start = 0; start < count; start += api?.qs?.queryLimit || queryLimit) {
     const requestOptions = {
       method: 'GET',
       url: apiBase,
       // Place global params first, so that they can be overriden by api.qs
-      params: {_limit: queryLimit, _start: start, ...api?.qs},
+      params: { _limit: queryLimit, _start: start, ...api?.qs },
       headers: addAuthorizationHeader({}, jwtToken),
     };
     reporter.info(
-        `Starting to fetch data from Strapi - ${apiBase} with params ${JSON.stringify(
-            requestOptions.params
-        )}`
+      `Starting to fetch data from Strapi - ${apiBase} with params ${JSON.stringify(
+        requestOptions.params
+      )}`
     );
 
     try {
-      const {data} = await axios(requestOptions);
+      const { data } = await axios(requestOptions);
       entities = entities.concat(data);
     } catch (error) {
       reporter.panic(`Failed to fetch data from Strapi`, error);
