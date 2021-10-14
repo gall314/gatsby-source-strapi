@@ -1,34 +1,55 @@
 import axios from 'axios';
 import { isObject, forEach, set, castArray, startsWith } from 'lodash';
 
+const getEntityCount = async (reporter, apiBase, jwtToken, api) => {
+  const requestOptions = {
+    method: 'GET',
+    url: `${apiBase}/count`,
+    // Place global params first, so that they can be overriden by api.qs
+    params: { ...api?.qs },
+    headers: addAuthorizationHeader({}, jwtToken),
+  };
+  reporter.info(`Starting to count data from Strapi - ${apiBase} with params ${JSON.stringify(requestOptions.params)}`);
+  try {
+    const { data } = await axios(requestOptions);
+    return data;
+  } catch (error) {
+    reporter.panic(`Failed to count data from Strapi`, error);
+  }
+}
+
 module.exports = async (entityDefinition, ctx) => {
   const { apiURL, queryLimit, jwtToken, reporter } = ctx;
 
   const { endpoint, api } = entityDefinition;
 
+  const count = await getEntityCount(reporter, apiBase, jwtToken, api);
+
   // Define API endpoint.
   let apiBase = `${apiURL}/${endpoint}`;
+  let entities = [];
+  for(let start = 0; start < count; start += api?.qs?.queryLimit || queryLimit) {
+    const requestOptions = {
+      method: 'GET',
+      url: apiBase,
+      // Place global params first, so that they can be overriden by api.qs
+      params: {_limit: queryLimit, _start: start, ...api?.qs},
+      headers: addAuthorizationHeader({}, jwtToken),
+    };
+    reporter.info(
+        `Starting to fetch data from Strapi - ${apiBase} with params ${JSON.stringify(
+            requestOptions.params
+        )}`
+    );
 
-  const requestOptions = {
-    method: 'GET',
-    url: apiBase,
-    // Place global params first, so that they can be overriden by api.qs
-    params: { _limit: queryLimit, ...api?.qs },
-    headers: addAuthorizationHeader({}, jwtToken),
-  };
-
-  reporter.info(
-    `Starting to fetch data from Strapi - ${apiBase} with params ${JSON.stringify(
-      requestOptions.params
-    )}`
-  );
-
-  try {
-    const { data } = await axios(requestOptions);
-    return castArray(data).map(clean);
-  } catch (error) {
-    reporter.panic(`Failed to fetch data from Strapi`, error);
+    try {
+      const {data} = await axios(requestOptions);
+      entities = entities.concat(data);
+    } catch (error) {
+      reporter.panic(`Failed to fetch data from Strapi`, error);
+    }
   }
+  return castArray(entities).map(clean);
 };
 
 /**
