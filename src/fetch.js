@@ -22,11 +22,10 @@ module.exports = async (entityDefinition, ctx) => {
   const { apiURL, queryLimit, jwtToken, reporter } = ctx;
 
   const { endpoint, api } = entityDefinition;
-
-  const count = await getEntityCount(reporter, apiBase, jwtToken, api);
-
   // Define API endpoint.
   let apiBase = `${apiURL}/${endpoint}`;
+  const count = await getEntityCount(reporter, apiBase, jwtToken, api);
+
   let entities = [];
   for(let start = 0; start < count; start += api?.qs?.queryLimit || queryLimit) {
     const requestOptions = {
