@@ -28,8 +28,8 @@ const fetchEntities = async (entityDefinition, ctx) => {
   return entities;
 };
 
-const addDynamicZoneFieldsToSchema = ({ type, items, actions, schema }) => {
-  const { createTypes } = actions;
+const addDynamicZoneFieldsToSchema = ({ type, items,  schema }) => {
+  // const { createTypes } = actions;
   // Search for dynamic zones in all items
   const dynamicZoneFields = {};
 
@@ -49,7 +49,8 @@ const addDynamicZoneFieldsToSchema = ({ type, items, actions, schema }) => {
       interfaces: ['Node'],
     });
 
-    createTypes([typeDef]);
+    console.warn(`Create schema customization: ${typeDef} `)
+    // createTypes([typeDef]);
   }
 };
 
@@ -102,7 +103,7 @@ exports.sourceNodes = async (
   types.forEach(({ name }, i) => {
     const items = entities[i];
 
-    addDynamicZoneFieldsToSchema({ type: name, items, actions, schema });
+    addDynamicZoneFieldsToSchema({ type: name, items, schema });
 
     items.forEach((item) => {
       const node = Node(capitalize(name), item);
