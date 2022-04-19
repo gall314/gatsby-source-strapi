@@ -49,7 +49,7 @@ const addDynamicZoneFieldsToSchema = ({ type, items,  schema }) => {
       interfaces: ['Node'],
     });
 
-    console.warn(`Create schema customization: ${typeDef} `)
+    console.warn(`Create schema customization: ${JSON.serialize(typeDef, null, 2)} `)
     // createTypes([typeDef]);
   }
 };
